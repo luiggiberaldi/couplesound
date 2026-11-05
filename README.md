@@ -132,4 +132,4 @@ Borra únicamente salas cuyo `updated_at` caducó **y** que están en pausa: una
 
 ## Estado
 
-El repositorio contiene por ahora la especificación y el esquema ejecutable en [`supabase/schema.sql`](supabase/schema.sql); todavía no existe código de aplicación. La fuente de verdad de la arquitectura, los umbrales y las reglas de sincronización es [`docs/prompt-syncwave-supabase.md`](docs/prompt-syncwave-supabase.md), y el esquema es su traducción a DDL.
+La PWA está implementada en `client/`, la función de reloj en `api/time.js` y el esquema en [`supabase/schema.sql`](supabase/schema.sql). El build de producción compila sin errores y genera el service worker con los tres iconos. Para usarla falta lo que no puede venir en el repo: crear el proyecto de Supabase, ejecutar el esquema y rellenar las variables de entorno. La fuente de verdad de la arquitectura, los umbrales y las reglas de sincronización sigue siendo [`docs/prompt-syncwave-supabase.md`](docs/prompt-syncwave-supabase.md).

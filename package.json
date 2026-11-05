@@ -1,0 +1,12 @@
+{
+  "name": "syncwave",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Watch party y altavoz sincronizado, serverless en Vercel con Supabase Realtime",
+  "scripts": {
+    "dev": "npm --prefix client run dev -- --host",
+    "build": "npm --prefix client ci && npm --prefix client run build",
+    "deploy": "vercel --prod"
+  }
+}

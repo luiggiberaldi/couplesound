@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-slate-950 text-slate-100 antialiased;
+    background-image:
+      radial-gradient(60rem 40rem at 15% -10%, rgba(139, 92, 246, 0.18), transparent 60%),
+      radial-gradient(50rem 35rem at 105% 10%, rgba(16, 185, 129, 0.12), transparent 55%);
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    @apply bg-violet-500/40;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-violet-400/70 ring-offset-2 ring-offset-slate-950;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply border border-white/10 bg-white/5 backdrop-blur-xl;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition
+      disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply btn bg-violet-500 text-white hover:bg-violet-400 active:bg-violet-600;
+  }
+
+  .btn-secondary {
+    @apply btn glass text-slate-100 hover:bg-white/10;
+  }
+
+  .btn-ghost {
+    @apply btn text-slate-300 hover:bg-white/5 hover:text-white;
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-white/10 bg-slate-900/70 px-4 py-3 text-base text-slate-100
+      placeholder:text-slate-500;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes reaction-float {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.8);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-55vh) scale(1.35);
+  }
+}
+
+.animate-reaction {
+  animation: reaction-float 3.4s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-reaction {
+    animation: none;
+    opacity: 1;
+  }
+}
