@@ -177,6 +177,17 @@ begin
   return v_deleted;
 end $$;
 
+-- Latido para que el plan gratuito no pause el proyecto por inactividad.
+-- Solo cuenta filas: no escribe, no devuelve filas y no revela el contenido de
+-- ninguna sala. Lo llama a diario el cron de Vercel con la clave anónima, así
+-- que no hace falta service_role en ninguna parte.
+create or replace function public.keepalive_ping()
+returns bigint
+language sql
+security definer set search_path = public as $$
+  select count(*) from public.rooms;
+$$;
+
 -- Sin grant: purge_stale_rooms borra filas, así que no se expone a anon.
 -- Se ejecuta desde el SQL Editor (rol propietario) o con service_role.
 
@@ -185,3 +196,4 @@ grant execute on function public.get_room(text) to anon;
 grant execute on function public.update_room(text, text, jsonb, double precision, boolean, bigint) to anon;
 grant execute on function public.set_control_mode(text, text, text) to anon;
 grant execute on function public.claim_host(text, text) to anon;
+grant execute on function public.keepalive_ping() to anon;

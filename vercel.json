@@ -1,5 +1,6 @@
 {
   "buildCommand": "npm --prefix client ci && npm --prefix client run build",
   "outputDirectory": "client/dist",
-  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }]
+  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }],
+  "crons": [{ "path": "/api/keepalive", "schedule": "0 8 * * *" }]
 }

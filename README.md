@@ -10,11 +10,12 @@ Es una **PWA**: se abre desde un enlace o un código QR, sin tiendas de aplicaci
 
 ## Arquitectura
 
-**100 % serverless en Vercel.** No hay servidor Node, no hay `socket.io` y no hay estado en memoria del proceso: en serverless cada invocación es un proceso nuevo y efímero, así que cualquier estado en RAM desaparece. La única función de backend es `api/time.js`, que devuelve la hora de referencia.
+**100 % serverless en Vercel.** No hay servidor Node, no hay `socket.io` y no hay estado en memoria del proceso: en serverless cada invocación es un proceso nuevo y efímero, así que cualquier estado en RAM desaparece. Las funciones de backend son `api/time.js`, que devuelve la hora de referencia, y `api/keepalive.js`, el latido diario que evita la pausa del plan gratuito.
 
 | Capa | Tecnología | Para qué sirve |
 | --- | --- | --- |
 | **Reloj** | `GET /api/time` (Vercel) | Única referencia temporal común. Devuelve `{ t: Date.now() }` y nunca se cachea. |
+| **Latido** | `GET /api/keepalive` (cron diario de Vercel) | Un `count(*)` con la clave anónima. Cuenta como actividad de base de datos y evita que Supabase pause el proyecto; no escribe ni devuelve filas. |
 | **Snapshot duradero** | tabla `rooms` en Supabase Postgres | Qué se reproduce, dónde y desde cuándo, con la posición anclada al reloj global (`sent_at_global`). Es la verdad que sobrevive a desconexiones. |
 | **Eventos instantáneos** | Supabase Broadcast | Play, pause, seek, cambio de medio, emoji y chat. Llega solo a quien está conectado. |
 | **Presencia** | Supabase Presence | Quién está en la sala, con alias, rol y contador en vivo. |
@@ -64,7 +65,7 @@ client/                PWA en React + Vite
 
 ### 1. Proyecto de Supabase
 
-Crea un proyecto en [supabase.com](https://supabase.com) y ejecuta **`supabase/schema.sql` completo** en el SQL Editor. El script crea la tabla `rooms`, las funciones `security definer` (`create_room`, `get_room`, `update_room`, `set_control_mode`, `claim_host`, `purge_stale_rooms`) y revoca el acceso directo a la tabla desde `anon`: el cliente entra solo por RPC, con el código de sala como control de acceso.
+Crea un proyecto en [supabase.com](https://supabase.com) y ejecuta **`supabase/schema.sql` completo** en el SQL Editor. El script crea la tabla `rooms`, las funciones `security definer` (`create_room`, `get_room`, `update_room`, `set_control_mode`, `claim_host`, `purge_stale_rooms`, `keepalive_ping`) y revoca el acceso directo a la tabla desde `anon`: el cliente entra solo por RPC, con el código de sala como control de acceso.
 
 ### 2. Variables de entorno
 
@@ -77,6 +78,21 @@ VITE_SUPABASE_ANON_KEY=<anon key pública>
 
 La `anon key` es pública por diseño: va en el bundle. La `service_role` **nunca** se usa en el cliente ni en variables `VITE_*`. Copia `client/.env.example` a `client/.env.local` y añade `client/.env.local` y `.env` al `.gitignore`. Vite lee el `.env` del directorio del proyecto, no el de la raíz.
 
+El cron del latido necesita las mismas credenciales **en el servidor**, sin prefijo `VITE_`, para que Vite no las meta en el bundle:
+
+```text
+SUPABASE_URL=https://<proyecto>.supabase.co
+SUPABASE_ANON_KEY=<anon key pública>
+```
+
+No son claves nuevas ni secretos: son las mismas dos, leídas con `process.env` solo dentro de `api/keepalive.js`. La `service_role` no se usa en ningún punto del proyecto.
+
+### El latido contra la pausa del plan gratuito
+
+Supabase pausa los proyectos gratuitos tras **7 días de baja actividad de base de datos**. `vercel.json` programa un cron diario (`0 8 * * *`, 08:00 UTC) sobre `/api/keepalive`, que llama a `keepalive_ping()`: un `count(*)` sobre `rooms` que cuenta como actividad de base de datos, no escribe nada y no devuelve filas.
+
+Tres límites que conviene tener presentes: el plan Hobby de Vercel solo admite crons **una vez al día** (y puede retrasarlos hasta ~59 minutos); el cron no corre con `vercel dev`, solo en un despliegue; y si el proyecto ya está pausado hay que reanudarlo una vez a mano desde el dashboard.
+
 ### 3. Dependencias
 
 ```bash
@@ -88,11 +104,11 @@ cd client && npm ci
 ### 4. Desarrollo
 
 ```bash
-npx vercel dev --listen 3000          # sirve /api/time
+npx vercel dev --listen 3000          # sirve /api/time y /api/keepalive
 cd client && npm run dev -- --host    # PWA en http://localhost:5173 (proxy /api → 3000)
 ```
 
-Pruebas de la lógica pura —orden de eventos, precisión del reloj, máquina de deriva, códigos de sala, identidad de archivo espejo y límites de chat y reacciones— con `node:test`, sin navegador ni Supabase:
+Pruebas de la lógica pura —orden de eventos, precisión del reloj, máquina de deriva, códigos de sala, identidad de archivo espejo, límites de chat y reacciones y el latido del servidor— con `node:test`, sin navegador ni Supabase:
 
 ```bash
 npm test
