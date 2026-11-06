@@ -6,6 +6,7 @@ import {
   CLOCK_SAMPLES,
   MIN_ACCURACY_SAMPLES
 } from '../lib/constants';
+import { computeClock } from '../lib/clockMath';
 
 // Estado de reloj compartido: getGlobalNow() se usa fuera de React (adaptador y
 // bucle de deriva) y por eso vive en el módulo, no en el estado del componente.
@@ -32,16 +33,6 @@ function publish(patch) {
   Object.assign(clock, patch);
   const snapshot = getClockSnapshot();
   listeners.forEach((listener) => listener(snapshot));
-}
-
-function quantile(values, q) {
-  const sorted = [...values].sort((a, b) => a - b);
-  if (sorted.length === 1) return sorted[0];
-  const position = (sorted.length - 1) * q;
-  const base = Math.floor(position);
-  const rest = position - base;
-  const next = sorted[base + 1];
-  return next === undefined ? sorted[base] : sorted[base] + rest * (next - sorted[base]);
 }
 
 async function takeSample() {
@@ -72,32 +63,19 @@ export async function calibrateClock() {
     }
   }
 
-  if (samples.length === 0) {
-    publish({ accuracy: null, degraded: true, calibratedAt: Date.now() });
-    return getClockSnapshot();
-  }
-
-  const minRtt = Math.min(...samples.map((sample) => sample.rtt));
-  const usable = samples.filter(
-    (sample) => sample.rtt <= CLOCK_RTT_FILTER_MS && sample.rtt <= 2 * minRtt
-  );
-  const offsets = usable.map((sample) => sample.offset);
-  const offset = quantile(offsets, 0.5);
-
-  // Con menos de 3 muestras el IQR es 0 o casi 0 y la cabecera mentiría con ±0 ms.
-  const degraded = usable.length < MIN_ACCURACY_SAMPLES;
-  let accuracy = null;
-  if (!degraded) {
-    const iqr = quantile(offsets, 0.75) - quantile(offsets, 0.25);
-    accuracy = Math.ceil(Math.max(iqr / 2, minRtt / 2));
-  }
+  // Toda la aritmética vive en lib/clockMath.js y tiene pruebas propias.
+  const result = computeClock({
+    samples,
+    minSamples: MIN_ACCURACY_SAMPLES,
+    rttFilterMs: CLOCK_RTT_FILTER_MS
+  });
 
   publish({
-    offset,
-    accuracy,
-    degraded,
-    minRtt: Math.round(minRtt),
-    ping: Math.round(minRtt),
+    offset: result.offset,
+    accuracy: result.accuracy,
+    degraded: result.degraded,
+    minRtt: result.minRtt,
+    ping: result.minRtt,
     calibratedAt: Date.now()
   });
 

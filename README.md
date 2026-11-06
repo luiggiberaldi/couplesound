@@ -92,6 +92,12 @@ npx vercel dev --listen 3000          # sirve /api/time
 cd client && npm run dev -- --host    # PWA en http://localhost:5173 (proxy /api → 3000)
 ```
 
+Pruebas de la lógica pura —orden de eventos, precisión del reloj, máquina de deriva, códigos de sala, identidad de archivo espejo y límites de chat y reacciones— con `node:test`, sin navegador ni Supabase:
+
+```bash
+npm test
+```
+
 ### 5. Producción
 
 ```bash

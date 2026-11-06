@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { FileVideo, Link2, Music, Video } from 'lucide-react';
 import { extractYouTubeId } from '../lib/playerAdapter';
+import { compareMirror, formatBytes, formatClock } from '../lib/mediaMirror';
 
 const DEMOS = [
   {
@@ -26,28 +27,6 @@ const TABS = [
   { id: 'file', label: 'Archivo local', icon: FileVideo }
 ];
 
-function normalizeName(name) {
-  return String(name || '')
-    .replace(/\.[^.]+$/, '')
-    .toLowerCase()
-    .trim();
-}
-
-function formatBytes(bytes) {
-  if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
-  const units = ['B', 'KB', 'MB', 'GB'];
-  const exponent = Math.min(units.length - 1, Math.floor(Math.log(bytes) / Math.log(1024)));
-  return `${(bytes / 1024 ** exponent).toFixed(exponent === 0 ? 0 : 1)} ${units[exponent]}`;
-}
-
-function formatClock(seconds) {
-  if (!Number.isFinite(seconds) || seconds <= 0) return '0:00';
-  const total = Math.round(seconds);
-  const minutes = Math.floor(total / 60);
-  const rest = String(total % 60).padStart(2, '0');
-  return `${minutes}:${rest}`;
-}
-
 function readDuration(file) {
   return new Promise((resolve) => {
     const element = document.createElement(file.type?.startsWith('audio/') ? 'audio' : 'video');
@@ -60,24 +39,6 @@ function readDuration(file) {
     element.onloadedmetadata = () => finish(element.duration);
     element.onerror = () => finish(0);
   });
-}
-
-function compareWithRoom(fileMeta, roomMedia) {
-  const issues = [];
-  if (!fileMeta || !roomMedia?.mirror) return issues;
-
-  if (normalizeName(fileMeta.name) !== normalizeName(roomMedia.mirror.name)) {
-    issues.push(`Nombre distinto: “${normalizeName(fileMeta.name)}” frente a “${normalizeName(roomMedia.mirror.name)}”.`);
-  }
-  const roomSize = Number(roomMedia.mirror.size) || 0;
-  if (roomSize > 0 && Math.abs(fileMeta.size - roomSize) / roomSize > 0.02) {
-    issues.push(`Tamaño distinto: ${formatBytes(fileMeta.size)} frente a ${formatBytes(roomSize)}.`);
-  }
-  const roomDuration = Number(roomMedia.duration) || 0;
-  if (roomDuration > 0 && Math.abs((fileMeta.duration || 0) - roomDuration) > 1) {
-    issues.push(`Duración distinta: ${formatClock(fileMeta.duration)} frente a ${formatClock(roomDuration)}.`);
-  }
-  return issues;
 }
 
 export default function MediaSelector({ room, canControl, onSelectMedia, localFile, onLocalFile, highlightFile }) {
@@ -96,7 +57,7 @@ export default function MediaSelector({ room, canControl, onSelectMedia, localFi
   const roomIsFile = room.media?.kind === 'file';
 
   const issues = useMemo(
-    () => (roomIsFile ? compareWithRoom(fileMeta, room.media) : []),
+    () => (roomIsFile ? compareMirror(fileMeta, room.media).issues : []),
     [fileMeta, roomIsFile, room.media]
   );
 
@@ -251,7 +212,7 @@ export default function MediaSelector({ room, canControl, onSelectMedia, localFi
               ) : (
                 <ul className="mt-2 space-y-1 text-amber-200">
                   {issues.map((issue) => (
-                    <li key={issue}>· {issue}</li>
+                    <li key={issue.code}>· {issue.message}</li>
                   ))}
                 </ul>
               )}
