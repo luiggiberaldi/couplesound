@@ -16,7 +16,7 @@ export default function Reactions({ reactions, onSend }) {
       </div>
 
       <section className="glass flex flex-wrap items-center gap-2 rounded-3xl px-3 py-2">
-        <span className="mr-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Reacciones</span>
+        <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-slate-400">Reacciones</span>
         {EMOJIS.map((emoji) => (
           <button
             key={emoji}

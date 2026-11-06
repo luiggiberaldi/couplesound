@@ -100,7 +100,7 @@ export default function InviteModal({ open, code, controlMode, canControl, onSet
                 Modo anfitrión
               </button>
             </div>
-            <p className="mt-2 text-[11px] leading-relaxed text-slate-500">
+            <p className="mt-2 text-xs leading-relaxed text-slate-400">
               El modo anfitrión es un bloqueo de cortesía, no seguridad: evita cortes accidentales, no protege la sala.
             </p>
           </div>

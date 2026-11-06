@@ -170,7 +170,7 @@ export default function MediaSelector({ room, canControl, onSelectMedia, localFi
           <button type="button" className="btn-primary w-full" onClick={submitYouTube} disabled={!canControl}>
             Usar este video
           </button>
-          <p className="text-[11px] leading-relaxed text-slate-500">
+          <p className="text-xs leading-relaxed text-slate-400">
             YouTube sincroniza de forma aproximada (±300 ms): la API del reproductor no permite cambiar la velocidad ni
             la posición con precisión de milisegundos.
           </p>
@@ -194,7 +194,7 @@ export default function MediaSelector({ room, canControl, onSelectMedia, localFi
           {fileMeta && (
             <div className="rounded-xl bg-slate-900/60 px-3 py-2 text-xs text-slate-300">
               <p className="truncate font-semibold">{fileMeta.name}</p>
-              <p className="text-slate-500">
+              <p className="text-slate-400">
                 {formatBytes(fileMeta.size)} · {formatClock(fileMeta.duration)}
               </p>
             </div>
@@ -204,7 +204,7 @@ export default function MediaSelector({ room, canControl, onSelectMedia, localFi
             <div className="rounded-xl bg-slate-900/60 px-3 py-2 text-xs">
               <p className="font-semibold text-slate-200">Archivo de la sala</p>
               <p className="truncate text-slate-400">{room.media.mirror?.name}</p>
-              <p className="text-slate-500">
+              <p className="text-slate-400">
                 {formatBytes(room.media.mirror?.size)} · {formatClock(room.media.duration)}
               </p>
               {issues.length === 0 ? (
@@ -231,7 +231,7 @@ export default function MediaSelector({ room, canControl, onSelectMedia, localFi
             </p>
           )}
 
-          <p className="text-[11px] leading-relaxed text-slate-500">
+          <p className="text-xs leading-relaxed text-slate-400">
             El archivo no se sube a ningún sitio: cada dispositivo lo elige en local y solo se comparte su nombre,
             tamaño y duración para comprobar que es el mismo.
           </p>

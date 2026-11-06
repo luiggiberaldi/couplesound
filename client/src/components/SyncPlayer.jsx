@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Music, Pause, Play, RotateCcw, SlidersHorizontal, Volume2 } from 'lucide-react';
+import { Loader2, Music, Pause, Play, RotateCcw, SlidersHorizontal, Volume2 } from 'lucide-react';
 import { useDriftCorrection } from '../hooks/useDriftCorrection';
 import { useWakeLock } from '../hooks/useWakeLock';
 import { getGlobalNow } from '../hooks/useClockSync';
@@ -304,6 +304,13 @@ export default function SyncPlayer({
           />
         )}
 
+        {!playerReady && (
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-slate-950/80">
+            <Loader2 className="h-6 w-6 animate-spin text-violet-200" aria-hidden="true" />
+            <p className="text-xs text-slate-300">Preparando el reproductor…</p>
+          </div>
+        )}
+
         {overlayOpen && room.isPlaying && <TapToSyncOverlay onTap={handleTapToSync} />}
       </div>
 
@@ -339,14 +346,14 @@ export default function SyncPlayer({
             onPointerUp={(event) => commitSeek(event.currentTarget.value)}
             onKeyUp={(event) => commitSeek(event.currentTarget.value)}
           />
-          <div className="flex justify-between text-[11px] tabular-nums text-slate-400">
+          <div className="flex justify-between text-xs tabular-nums text-slate-400">
             <span>{formatClock(dragging ? dragValue : position)}</span>
             <span>{formatClock(duration)}</span>
           </div>
         </div>
 
-        <div className="hidden items-center gap-2 sm:flex">
-          <Volume2 className="h-4 w-4 text-slate-400" aria-hidden="true" />
+        <div className="flex items-center gap-1.5">
+          <Volume2 className="h-4 w-4 shrink-0 text-slate-300" aria-hidden="true" />
           <input
             type="range"
             min={0}
@@ -354,14 +361,14 @@ export default function SyncPlayer({
             step={0.05}
             value={volume}
             aria-label="Volumen local"
-            className="w-20 accent-emerald-400"
+            className="w-16 accent-emerald-400 sm:w-20"
             onChange={(event) => setVolume(Number(event.target.value))}
           />
         </div>
       </div>
 
       <div className="mt-2 flex items-center justify-between gap-2">
-        <span className="inline-flex items-center gap-1.5 text-[11px] text-slate-400">
+        <span className="inline-flex items-center gap-1.5 text-xs text-slate-400">
           <span
             className={`h-1.5 w-1.5 rounded-full ${
               driftState === 'CORRECTING' ? 'bg-amber-300' : 'bg-emerald-400'
@@ -370,7 +377,7 @@ export default function SyncPlayer({
           {driftState === 'CORRECTING' ? 'Ajustando velocidad…' : 'Sincronizado'} · {driftMs > 0 ? '+' : ''}
           {driftMs} ms
         </span>
-        <button type="button" className="btn-ghost px-2 py-1 text-[11px]" onClick={() => setShowOffset((value) => !value)}>
+        <button type="button" className="btn-ghost px-2 py-1 text-xs" onClick={() => setShowOffset((value) => !value)}>
           <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
           Calibración
         </button>
@@ -378,7 +385,7 @@ export default function SyncPlayer({
 
       {showOffset && (
         <div className="mt-2 rounded-xl bg-slate-900/60 px-3 py-3">
-          <div className="flex items-center justify-between text-[11px] text-slate-400">
+          <div className="flex items-center justify-between text-xs text-slate-400">
             <span>Retardo local</span>
             <span className="tabular-nums text-slate-200">
               {manualOffsetMs > 0 ? '+' : ''}
@@ -396,10 +403,10 @@ export default function SyncPlayer({
             onChange={(event) => setManualOffsetMs(Number(event.target.value))}
           />
           <div className="mt-1 flex items-center justify-between">
-            <p className="text-[10px] text-slate-500">Compensa el retardo de tus altavoces o del Bluetooth.</p>
+            <p className="text-xs text-slate-400">Compensa el retardo de tus altavoces o del Bluetooth.</p>
             <button
               type="button"
-              className="btn-ghost px-1 py-0.5 text-[10px]"
+              className="btn-ghost px-1 py-0.5 text-xs"
               onClick={() => setManualOffsetMs(0)}
             >
               <RotateCcw className="h-3 w-3" aria-hidden="true" />

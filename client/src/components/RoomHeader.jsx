@@ -23,7 +23,7 @@ export default function RoomHeader({
     <header className="glass rounded-3xl p-4">
       <div className="flex flex-wrap items-center gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-500">Sala</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Sala</p>
           <p className="truncate text-2xl font-bold tracking-[0.3em] text-violet-200">{room.code}</p>
         </div>
 

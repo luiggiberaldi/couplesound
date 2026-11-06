@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { AlertTriangle, SlidersHorizontal, X } from 'lucide-react';
+import { AlertTriangle, Loader2, SlidersHorizontal, X } from 'lucide-react';
 import { useClockSync } from './hooks/useClockSync';
 import { useSyncRoom } from './hooks/useSyncRoom';
 import { supabaseConfigured } from './lib/supabase';
@@ -26,6 +26,13 @@ function SetupCard() {
       </div>
     </main>
   );
+}
+
+function connectionMessage(status) {
+  if (status === 'connecting') return 'Conectando con la sala…';
+  if (status === 'disconnected' || status === 'closed') return 'Conexión perdida. Reintentando…';
+  if (status === 'presence-error') return 'No pudimos anunciar tu presencia en la sala.';
+  return 'Preparando la sala…';
 }
 
 export default function App() {
@@ -102,6 +109,17 @@ export default function App() {
         onClaimHost={sync.claimHost}
         selfDeviceId={sync.deviceId}
       />
+
+      {sync.status !== 'connected' && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="flex items-center gap-3 rounded-2xl border border-violet-400/25 bg-violet-500/10 px-4 py-3 text-sm text-violet-100"
+        >
+          <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" />
+          <span>{connectionMessage(sync.status)}</span>
+        </div>
+      )}
 
       {sync.error && (
         <div className="flex items-start gap-3 rounded-2xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">

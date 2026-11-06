@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AlertTriangle, DoorOpen, Plus } from 'lucide-react';
+import { AlertTriangle, DoorOpen, Loader2, Plus } from 'lucide-react';
 import { ROOM_CODE_REGEX, ROOM_CODE_LENGTH } from '../lib/constants';
 
 export default function Lobby({ alias, onAliasChange, onCreate, onJoin, busy, error, onDismissError }) {
@@ -65,8 +65,18 @@ export default function Lobby({ alias, onAliasChange, onCreate, onJoin, busy, er
           onChange={(event) => onAliasChange(event.target.value)}
         />
 
-        <button type="button" className="btn-primary mt-4 w-full" onClick={handleCreate} disabled={busy}>
-          <Plus className="h-5 w-5" aria-hidden="true" />
+        <button
+          type="button"
+          className="btn-primary mt-4 w-full"
+          onClick={handleCreate}
+          disabled={busy}
+          aria-busy={busy}
+        >
+          {busy ? (
+            <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+          ) : (
+            <Plus className="h-5 w-5" aria-hidden="true" />
+          )}
           {busy ? 'Creando sala…' : 'Crear sala sincronizada'}
         </button>
       </section>
@@ -86,13 +96,17 @@ export default function Lobby({ alias, onAliasChange, onCreate, onJoin, busy, er
           spellCheck={false}
           onChange={(event) => setCode(event.target.value.toUpperCase().slice(0, ROOM_CODE_LENGTH))}
         />
-        <button type="submit" className="btn-secondary mt-4 w-full" disabled={busy}>
-          <DoorOpen className="h-5 w-5" aria-hidden="true" />
+        <button type="submit" className="btn-secondary mt-4 w-full" disabled={busy} aria-busy={busy}>
+          {busy ? (
+            <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+          ) : (
+            <DoorOpen className="h-5 w-5" aria-hidden="true" />
+          )}
           {busy ? 'Conectando…' : 'Entrar a la sala'}
         </button>
       </form>
 
-      <p className="px-2 text-center text-xs leading-relaxed text-slate-500">
+      <p className="px-2 text-center text-xs leading-relaxed text-slate-400">
         Sin cuentas ni instalación: compartes un código y listo. El audio del archivo local nunca sale de tu
         dispositivo.
       </p>
